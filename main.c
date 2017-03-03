@@ -13,7 +13,9 @@
 #define showDebugDataMain 1
 
 #include "main.h"
+#if showDebugDataMain == 1
 #include "slUart.h"
+#endif
 #include "slNRF24.h"
 #include "slBME180Measure.h"
 #include "slI2C.h"
@@ -25,31 +27,23 @@
 
 void clearData();
 void setupTimer();
-
 void nrf24_Start();
-
-//sensor11
 void waitForStart();
-
 uint8_t setBME280Mode();
-
 uint8_t getDataFromBME280();
-
 uint8_t sendVianRF24L01();
-
 uint8_t pipe1[] = {0xF0, 0xF0, 0xF0, 0xF0, 0xE1};
 uint8_t pipe2[] = {0xF0, 0xF0, 0xF0, 0xF0, 0xD2};
 uint8_t data[9];
-float t = 0;
 struct MEASURE BME180measure = {0, 0, 0, 0, 0};
 volatile uint8_t stage;
 volatile uint16_t counter = 0;
-uint8_t t1[9] = {0x73, 0x74, 0x61, 0x72, 0x74, 0x2d, 0x73, 0x31, 0x31};
-
 const char startStringSensor11[] = {'s','t','a','r','t','-','s','1','1'};
-uint8_t i =0;
+
 int main(void) {
+#if showDebugDataMain == 1
     slUART_SimpleTransmitInit();
+#endif
     slI2C_Init();
     setupTimer();
     nrf24_Start();
@@ -107,37 +101,33 @@ void nrf24_Start() {
     slNRF_EnableAckPayload();
     slNRF_SetRetries(0, 15);
     slNRF_AutoAck(1);
-    //slNRF_showDebugData();
     slNRF_PowerUp();
     slNRF_StartListening();
     clearData();
 }
 
-
-
-//sensor11
-
-//stage 11
 void waitForStart() {
     counter = 0;
     if (slNRF_Available()) {
         clearData();
         slNRF_Recive(data, sizeof(data));
         if (strcmp((char *) data, startStringSensor11)) {
+#if showDebugDataMain == 1
             slUART_WriteStringNl("got start command");
+#endif
             stage = 12;
             _delay_ms(1000);
         }
         slNRF_FlushTX();
         slNRF_FlushRX();
     }
-
 }
 
-//stage 12
 uint8_t setBME280Mode() {
     counter = 0;
+#if showDebugDataMain == 1
     slUART_WriteStringNl("reset BME280");
+#endif
     if (BME280_SetMode(BME280_MODE_FORCED)) {
 #if showDebugDataMain == 1
         slUART_WriteString("Sensor set forced mode error!\r\n");
@@ -148,7 +138,6 @@ uint8_t setBME280Mode() {
     return 0;
 }
 
-//stage 13
 uint8_t getDataFromBME280() {
     counter = 0;
     float temperature, humidity, pressure;
@@ -163,35 +152,39 @@ uint8_t getDataFromBME280() {
     BME180measure.pressure = calculatePressure(pressure);
     BME180measure.voltage = 323;
     BME180measure.sensorId = SENSOR_ID;
+#if showDebugDataMain == 1
     slUART_LogDecNl(BME180measure.temperature);
     slUART_LogDecNl(BME180measure.humidity);
     slUART_LogDecNl(BME180measure.pressure);
     slUART_WriteStringNl("got data from BME280");
+#endif
     slNRF_FlushTX();
     slNRF_FlushRX();
     stage = 14;
     return 0;
 }
 
-//stage 14
 uint8_t sendVianRF24L01() {
     counter = 0;
+#if showDebugDataMain == 1
     slUART_WriteStringNl("Sending data to server");
-    //LED_TOG;
+#endif
     fillBuferFromMEASURE(BME180measure, data);
     slNRF_StopListening();
     if (!slNRF_Sent(data, sizeof(data))) {
+#if showDebugDataMain == 1
         slUART_WriteStringNl("Fail\n");
+#endif
     } else {
+#if showDebugDataMain == 1
         slUART_WriteStringNl("SendOk\n");
+#endif
+        clearData();
+        slNRF_StartListening();
+        stage = 11;
     }
-    clearData();
-    slNRF_StartListening();
-    //LED_TOG;
-    stage = 11;
     return 0;
 }
-
 
 ISR(TIMER0_OVF_vect) {
   //co 0.01632sek.

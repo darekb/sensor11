@@ -24,11 +24,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
  ********************************************************************************/
 
 #include <avr/io.h>
+#include "slI2C.h"
+#include "BME280.h"
+#if showDebugDataBME280 == 1
 #include <string.h>
 #include <stdio.h>
-#include "slI2C.h"
 #include "slUart.h"
-#include "BME280.h"
+#endif
 
 
 static struct {
