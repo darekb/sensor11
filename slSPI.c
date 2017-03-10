@@ -25,7 +25,7 @@ void slSPI_Init() {
     //Mode 0 Rising edge of data, keep clock low
     slSPI_SetMode0();
 
-    //Run the data in at 16MHz/2 - 8MHz
+    //Run the data in at 8MHz/2 - 4MHz
     slSPI_SetClockDiv2();
 
 }

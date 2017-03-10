@@ -211,6 +211,7 @@ void slNRF_AutoAck(uint8_t isOn);
 void slNRF_showDebugData();
 #endif
 void slNRF_PowerUp();
+void slNRF_PowerDown();
 void slNRF_FlushTX();
 void slNRF_FlushRX();
 void slNRF_StartListening();
