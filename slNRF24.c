@@ -397,36 +397,30 @@ void slNRF_SetChannel(uint8_t channel) {
 }
 
 void slNRF_EnableDynamicPayloads() {
-#if showDebugDataNRF24
-     slNRF_GetRegister(FEATURE, 1);
-     slNRF_GetRegister(DYNPD, 1);
-    toggle_features();
-#endif
     slNRF_SetRegister(FEATURE, slNRF_GetRegister(FEATURE, 0) | _BV(EN_DPL));
-
-    // Enable dynamic payload on all pipes
-    //
     // Not sure the use case of only having dynamic payload on certain
     // pipes, so the library does not support it.
     slNRF_SetRegister(DYNPD, slNRF_GetRegister(DYNPD, 1) | _BV(DPL_P5) | _BV(DPL_P4) | _BV(DPL_P3) | _BV(DPL_P2) |
                              _BV(DPL_P1) | _BV(DPL_P0));
-#if showDebugDataNRF24
-    // slNRF_GetRegister(FEATURE, 1);
-    // slNRF_GetRegister(DYNPD, 1);
-#endif
     dynamicPayloadsEnabled = 1;
-
 }
+
+void slNRF_DisableDynamicPayloads() {
+    slNRF_SetRegister(FEATURE, slNRF_GetRegister(FEATURE, 0) & ~_BV(EN_DPL));
+    slNRF_SetRegister(DYNPD,0);
+    dynamicPayloadsEnabled = 0;
+}
+
+
 
 void slNRF_EnableAckPayload() {
     // enable ack payload and dynamic payload features
     //toggle_features();
     slNRF_SetRegister(FEATURE, slNRF_GetRegister(FEATURE, 0) | _BV(EN_ACK_PAY) | _BV(EN_DPL));
-    slNRF_SetRegister(FEATURE, slNRF_GetRegister(FEATURE, 0) | _BV(EN_ACK_PAY) | _BV(EN_DPL));
 
     // Enable dynamic payload on pipes 0 & 1
-    slNRF_SetRegister(DYNPD, slNRF_GetRegister(DYNPD, 1) | _BV(DPL_P1) | _BV(DPL_P0));
-    dynamicPayloadsEnabled = 1;
+    // slNRF_SetRegister(DYNPD, slNRF_GetRegister(DYNPD, 1) | _BV(DPL_P1) | _BV(DPL_P0));
+    // dynamicPayloadsEnabled = 1;
 }
 
 void slNRF_SetRetries(uint8_t delay, uint8_t countOfTray) {

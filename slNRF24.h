@@ -204,6 +204,7 @@ uint8_t slNRF_SetDataRate(uint8_t dataRateValue);
 void slNRF_SetPALevel(uint8_t  paValue ) ;
 void slNRF_SetChannel(uint8_t channel);
 void slNRF_EnableDynamicPayloads();
+void slNRF_DisableDynamicPayloads();
 void slNRF_EnableAckPayload();
 void slNRF_SetRetries(uint8_t delay, uint8_t countOfTray);
 void slNRF_AutoAck(uint8_t isOn);

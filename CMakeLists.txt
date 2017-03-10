@@ -10,7 +10,7 @@ set(AVR_H_FUSE 0xD9)
 # SET(AVR_MCU "atmega168")
 # set(AVR_L_FUSE 0xFF)
 # set(AVR_H_FUSE 0xDD)
-
+#
 set(AVR_UPLOADTOOL avrdude)
 set(AVR_PROGRAMMER arduino)
 set(AVR_UPLOADTOOL_PORT /dev/ttyUSB0)

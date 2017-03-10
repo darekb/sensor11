@@ -17,11 +17,10 @@
 
 #include "main.h"
 
-#if showDebugDataMain == 1
+
 
 #include "slUart.h"
 
-#endif
 
 #include "slNRF24.h"
 #include "slBME180Measure.h"
@@ -31,23 +30,16 @@
 #define SENSOR_ID 11
 
 void clearData();
-
 void setupTimer();
-
 void nrf24_Start();
 
+
 void goSleep();
-
 void wakeUp();
-
 void waitForStart();
-
 void compareStrings();
-
 uint8_t setBME280Mode();
-
 uint8_t getDataFromBME280();
-
 uint8_t sendVianRF24L01();
 
 uint8_t pipe1[] = {0xF0, 0xF0, 0xF0, 0xF0, 0xE1};
@@ -60,22 +52,17 @@ volatile int f_timer = 0;
 const char startStringSensor11[] = {'s', 't', 'a', 'r', 't', '-', 's', '1', '1'};
 
 int main(void) {
-#if showDebugDataMain == 1
+
     slUART_SimpleTransmitInit();
     slUART_WriteString("start.\r\n");
-#endif
     slI2C_Init();
     setupTimer();
     nrf24_Start();
     if (BME280_Init(BME280_OS_T_1, BME280_OS_P_1, BME280_OS_H_1, BME280_FILTER_OFF, BME280_MODE_FORCED,
                     BME280_TSB_1000)) {
-#if showDebugDataMain == 1
         slUART_WriteString("BMP280 init error.\r\n");
-#endif
     } else {
-#if showDebugDataMain == 1
         slUART_WriteString("BMP280 init done.\r\n");
-#endif
     }
     stage = 11;
     while (1) {
@@ -140,9 +127,9 @@ void nrf24_Start() {
     slNRF_SetDataRate(RF24_250KBPS);
     slNRF_SetPALevel(RF24_PA_MAX);
     slNRF_SetChannel(77);
-    slNRF_EnableDynamicPayloads();
-    slNRF_EnableAckPayload();
-    slNRF_SetRetries(1, 3);
+    slNRF_DisableDynamicPayloads();
+    //slNRF_EnableAckPayload();
+    slNRF_SetRetries(0, 3);
     slNRF_AutoAck(1);
     slNRF_PowerUp();
     slNRF_StartListening();
@@ -151,7 +138,7 @@ void nrf24_Start() {
 //stage 9
 void goSleep() {
     counter = counter + 1;
-    if (counter >= 15) {//15.728399999999999 sek
+    if (counter >= 20) {//15.728399999999999 sek
         f_timer = 0;
         stage = 10;
         counter = 0;
@@ -196,10 +183,8 @@ void waitForStart() {
     counter = 0;
     if (slNRF_Available()) {
         slNRF_Recive(data, sizeof(data));
-#if showDebugDataMain == 1
         slUART_WriteStringNl("got data from server");
         slUART_WriteStringNl((char *) data);
-#endif
         slNRF_StopListening();
         slNRF_PowerDown();
         stage = 12;
@@ -217,9 +202,7 @@ void compareStrings() {
     }
     //slUART_LogDecNl(go);
     if (go == sizeof(data)) {
-#if showDebugDataMain == 1
         slUART_WriteStringNl("got start command");
-#endif
         stage = 13;
         clearData();
     } else {
@@ -230,13 +213,9 @@ void compareStrings() {
 //stage13
 uint8_t setBME280Mode() {
     counter = 0;
-#if showDebugDataMain == 1
     slUART_WriteStringNl("reset BME280");
-#endif
     if (BME280_SetMode(BME280_MODE_FORCED)) {
-#if showDebugDataMain == 1
         slUART_WriteString("Sensor set forced mode error!\r\n");
-#endif
         return 1;
     }
     stage = 14;
@@ -248,9 +227,8 @@ uint8_t getDataFromBME280() {
     counter = 0;
     float temperature, humidity, pressure;
     if (BME280_ReadAll(&temperature, &pressure, &humidity)) {
-#if showDebugDataMain == 1
+
         slUART_WriteString("Sensor read error!\r\n");
-#endif
         return 1;
     }
     BME180measure.temperature = calculateTemperature(temperature);
@@ -258,12 +236,10 @@ uint8_t getDataFromBME280() {
     BME180measure.pressure = calculatePressure(pressure);
     BME180measure.voltage = 323;
     BME180measure.sensorId = SENSOR_ID;
-#if showDebugDataMain == 1
     slUART_WriteStringNl("got data from BME280");
     slUART_LogDecNl(BME180measure.temperature);
     slUART_LogDecNl(BME180measure.humidity);
     slUART_LogDecNl(BME180measure.pressure);
-#endif
     stage = 15;
     return 0;
 }
@@ -272,30 +248,23 @@ uint8_t getDataFromBME280() {
 uint8_t sendVianRF24L01() {
     counter = 0;
     _delay_ms(4500);
-#if showDebugDataMain == 1
-#endif
     fillBuferFromMEASURE(BME180measure, data);
-    slNRF_PowerUp();
     slUART_WriteStringNl("Sending data to server");
+    slNRF_PowerUp();
     if (!slNRF_Sent(data, sizeof(data))) {
         clearData();
         slNRF_PowerDown();
-        //slNRF_StartListening();
         counter = 0;
         stage = 0;
-#if showDebugDataMain == 1
         slUART_WriteStringNl("Fail\n");
         stage = 9;//go sleep
-#endif
         return 1;
     } else {
-        clearData();
+        slUART_WriteStringNl("SendOk\n");
+        slNRF_PowerDown();
         counter = 0;
         stage = 0;
-        slNRF_PowerDown();
-#if showDebugDataMain == 1
-        slUART_WriteStringNl("SendOk\n");
-#endif
+        clearData();
         stage = 9;//go sleep
     }
     return 0;
