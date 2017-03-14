@@ -128,7 +128,7 @@ void nrf24_Start() {
     slNRF_SetPALevel(RF24_PA_MAX);
     slNRF_SetChannel(77);
     slNRF_DisableDynamicPayloads();
-    //slNRF_EnableAckPayload();
+    slNRF_EnableAckPayload();
     slNRF_SetRetries(0, 3);
     slNRF_AutoAck(1);
     slNRF_PowerUp();
