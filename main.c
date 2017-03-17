@@ -49,6 +49,7 @@ struct MEASURE BME180measure = {0, 0, 0, 0, 0};
 volatile uint8_t stage;
 volatile uint16_t counter = 0;
 volatile int f_timer = 0;
+volatile uint8_t listenTime = 0;
 const char startStringSensor11[] = {'s', 't', 'a', 'r', 't', '-', 's', '1', '1'};
 
 int main(void) {
@@ -125,10 +126,10 @@ void nrf24_Start() {
     slNRF_OpenWritingPipe(pipe2, 9);
     slNRF_OpenReadingPipe(pipe1, 9, 1);
     slNRF_SetDataRate(RF24_250KBPS);
-    slNRF_SetPALevel(RF24_PA_MAX);
+    slNRF_SetPALevel(RF24_PA_MIN);
     slNRF_SetChannel(77);
     slNRF_DisableDynamicPayloads();
-    //slNRF_EnableAckPayload();
+    slNRF_EnableAckPayload();
     slNRF_SetRetries(0, 3);
     slNRF_AutoAck(1);
     slNRF_PowerUp();
@@ -145,6 +146,9 @@ void goSleep() {
         /* Re-enable the peripherals. */
         power_all_enable();
     } else {
+        if(f_timer == 0){
+            slUART_WriteStringNl("goSleep");
+        }
         f_timer = 1;
         set_sleep_mode(SLEEP_MODE_IDLE);
         sleep_enable();
@@ -186,8 +190,14 @@ void waitForStart() {
         slUART_WriteStringNl("got data from server");
         slUART_WriteStringNl((char *) data);
         slNRF_StopListening();
+        slNRF_FlushTX();
+        slNRF_FlushRX();
         slNRF_PowerDown();
         stage = 12;
+    }
+    if(listenTime > 7){
+        listenTime = 0;
+        stage = 9;//go sleep
     }
 }
 
@@ -274,6 +284,9 @@ ISR(TIMER1_OVF_vect) {
     //co 1.04856 sek.
     if(f_timer == 1){
         stage = 9;
+    }
+    if(stage == 11){
+        listenTime = listenTime +1;
     }
 
 }

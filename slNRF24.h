@@ -79,8 +79,8 @@
 #define SETUP_AW    0x03
 #define AW          0
 #define SETUP_AW_3  0x01 //3 bytes
-#define SETUP_AW_4  0x10 //4 bytes
-#define SETUP_AW_5  0x11 //5 bytes
+#define SETUP_AW_4  0x02 //4 bytes
+#define SETUP_AW_5  0x03 //5 bytes
 
 #define SETUP_RETR  0x04
 #define ARD         4
