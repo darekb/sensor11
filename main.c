@@ -32,8 +32,6 @@ void setupInt0();
 
 void goReset();
 
-void waitForStart();
-
 void compareStrings();
 
 uint8_t setBME280Mode();
@@ -69,11 +67,6 @@ int main(void) {
     slNRF24_IoInit();
     setupInt0();
     slNRF24_Init();
-    status = 0;
-    slNRF24_GetRegister(CONFIG, &status, 1);
-    slUART_WriteString("sensor11 CONFIG: ");
-    slUART_LogBinaryNl(status);
-    slNRF24_RxPowerUp();
     sei();
     stage = 10;
 
@@ -82,9 +75,6 @@ int main(void) {
             case 10:
                 goReset();
             break;
-            case 11:
-                waitForStart();
-                break;
             case 12:
                 compareStrings();
                 break;
@@ -133,14 +123,6 @@ void goReset(){
     stage = 0;
 }
 
-//stage 11
-void waitForStart() {
-    counter = 0;
-    slUART_WriteStringNl("Sensor11 Go");
-    clearData();
-    //wait for inerupt
-    stage = 0;
-}
 
 //stage 12
 void compareStrings() {
@@ -204,10 +186,8 @@ uint8_t sendVianRF24L01() {
     slNRF24_Reset();
     fillBuferFromMEASURE(BME180measure, data);
     slUART_WriteStringNl("Sensor11 Sending data");
-    //_delay_ms(1000);
     slNRF24_TxPowerUp();
     slNRF24_TransmitPayload(&data, 9);
-    //_delay_ms(1000);
     clearData();
     stage = 10;
     return 0;
@@ -217,15 +197,11 @@ uint8_t sendVianRF24L01() {
 ISR(INT0_vect) {
     status = 0;
     slNRF24_GetRegister(STATUS, &status, 1);
-    slUART_WriteString("Sensor11 STATUS: ");
-    slUART_LogBinaryNl(status);
     cli();
     if ((status & (1 << 6)) != 0) {
-        slUART_WriteStringNl("Sensor11 Got Data");
         stage = 12;//CompareStrings
     }
     if ((status & (1 << 5)) != 0) {
-        slUART_WriteStringNl("Sensor11 Sent Data");
         stage = 10;//goReset
     }
     sei();
