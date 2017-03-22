@@ -149,5 +149,6 @@ void slNRF24_ReceivePayload(void);
 void slNRF24_TransmitPayload(void *dataIn, uint8_t len);
 void slNRF24_TxPowerUp();
 void slNRF24_RxPowerUp();
+void slNRF24_PowerDown();
 void slNRF24_FlushTx();
 void slNRF24_FlushRx();

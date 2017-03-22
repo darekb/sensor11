@@ -128,6 +128,7 @@ void goReset(){
     slNRF24_Reset();
     slNRF24_FlushTx();
     slNRF24_FlushRx();
+    slNRF24_RxPowerUp();
     //wait for inerupt
     stage = 0;
 }
@@ -198,18 +199,17 @@ uint8_t getDataFromBME280() {
 //stage15
 uint8_t sendVianRF24L01() {
     counter = 0;
-    fillBuferFromMEASURE(BME180measure, data);
-    slUART_WriteStringNl("Sensor11 Sending data");
     slNRF24_FlushTx();
     slNRF24_FlushRx();
     slNRF24_Reset();
+    fillBuferFromMEASURE(BME180measure, data);
+    slUART_WriteStringNl("Sensor11 Sending data");
+    //_delay_ms(1000);
+    slNRF24_TxPowerUp();
     slNRF24_TransmitPayload(&data, 9);
-    //_delay_ms(500);
-    // sendingTryCount = sendingTryCount + 1;
-    // if(sendingTryCount > 10){
-    //     stage = 10;//goReset
-    // }
-    stage = 0;
+    //_delay_ms(1000);
+    clearData();
+    stage = 10;
     return 0;
 }
 
@@ -217,7 +217,7 @@ uint8_t sendVianRF24L01() {
 ISR(INT0_vect) {
     status = 0;
     slNRF24_GetRegister(STATUS, &status, 1);
-    slUART_WriteStringNl("Sensor11 STATUS:");
+    slUART_WriteString("Sensor11 STATUS: ");
     slUART_LogBinaryNl(status);
     cli();
     if ((status & (1 << 6)) != 0) {

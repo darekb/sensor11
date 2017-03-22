@@ -126,20 +126,18 @@ void slNRF24_ChangeAddress(uint8_t adress)
 {
     _delay_ms(100);
     uint8_t val[5];
-    int i;
-    for(i=0; i<5; i++)
-    {
+    for(uint8_t i=0; i<5; i++){
         val[i]=adress;
     }
-    slNRF24_SetRegister(RX_ADDR_P0, val, 5); //0b0010 1010 write registry - eftersom vi valde pipe 0 i "EN_RXADDR" ovan, ger vi RF_Adressen till denna pipe. (kan ge olika RF_Adresser till olika pipes och därmed lyssna på olika transmittrar)
-
-    //TX RF_Adress setup 5 byte -  väljer RF_Adressen på Transmittern (kan kommenteras bort på en "ren" Reciver)
-    //int i; //återanvänder föregående i...
-    for(i=0; i<5; i++)
-    {
-        val[i]=adress;	//RF channel registry 0b10111100 x 5 - skriver samma RF_Adress 5ggr för att få en lätt och säker RF_Adress (samma på Reciverns chip och på RX-RF_Adressen ovan om EN_AA enablats!!!)
+    slNRF24_SetRegister(RX_ADDR_P0, val, 5); 
+    for(uint8_t i=0; i<5; i++){
+        val[i]=adress;
     }
     slNRF24_SetRegister(TX_ADDR, val, 5);
+    for(uint8_t i=0; i<5; i++){
+        val[i]=adress;
+    }
+    slNRF24_SetRegister(RX_ADDR_P1, val, 5); 
     _delay_ms(100);
 }
 
@@ -172,9 +170,6 @@ void slNRF24_TransmitPayload(void *dataIn, uint8_t len)
 
     cli();
     slNRF24_SetRegister(RX_PW_P0, &len, 1);
-    slNRF24_FlushTx();
-    slNRF24_TxPowerUp();
-    
     _delay_us(10);
     CSN_LOW();
     _delay_us(10);
@@ -185,15 +180,11 @@ void slNRF24_TransmitPayload(void *dataIn, uint8_t len)
         _delay_us(10);
     }
     CSN_HIGH();
-
-
     _delay_ms(10);
     CE_HIGH();
     _delay_us(20);
     CE_LOW();
     _delay_ms(10);
-    slNRF24_FlushRx();
-    slNRF24_RxPowerUp();
     sei();
     //cli();	//Disable global interrupt...
 
@@ -203,14 +194,26 @@ void slNRF24_TransmitPayload(void *dataIn, uint8_t len)
 void slNRF24_TxPowerUp(){
     uint8_t configReg;
     slNRF24_GetRegister(CONFIG, &configReg, 1);
-    configReg |= (1<<PWR_UP) | (0<<PRIM_RX);
+    configReg |= (1<<PWR_UP);
+    configReg &= ~(1<<PRIM_RX);
     slNRF24_SetRegister(CONFIG,&configReg,1);
     CE_LOW();
+    slNRF24_ChangeAddress(0x12);
 }
 void slNRF24_RxPowerUp(){
     uint8_t configReg;
     slNRF24_GetRegister(CONFIG, &configReg, 1);
     configReg |= (1<<PWR_UP) | (1<<PRIM_RX);
+    slNRF24_SetRegister(CONFIG,&configReg,1);
+    CE_HIGH();
+    slNRF24_ChangeAddress(0x12);
+    slNRF24_FlushTx();
+}
+void slNRF24_PowerDown(){
+    uint8_t configReg;
+    slNRF24_GetRegister(CONFIG, &configReg, 1);
+    configReg |= (1<<PRIM_RX);
+    configReg &= ~(0<<PWR_UP);
     slNRF24_SetRegister(CONFIG,&configReg,1);
     CE_HIGH();
 }
