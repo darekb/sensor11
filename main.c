@@ -23,6 +23,7 @@
 #include "slI2C.h"
 #include "BME280.h"
 #include "slSPI.h"
+#include "slAdc.h"
 
 #define SENSOR_ID 11
 
@@ -38,17 +39,15 @@ uint8_t setBME280Mode();
 
 uint8_t getDataFromBME280();
 
+void measuerADC();
+
 uint8_t sendVianRF24L01();
 
-uint8_t pipe1[] = {0xF0, 0xF0, 0xF0, 0xF0, 0xE1};
-uint8_t pipe2[] = {0xF0, 0xF0, 0xF0, 0xF0, 0x95};
 uint8_t data[9];
 uint8_t status;
 struct MEASURE BME180measure = {0, 0, 0, 0, 0};
 volatile uint8_t stage;
 volatile uint16_t counter = 0;
-volatile int f_timer = 0;
-volatile uint8_t sendingTryCount = 0;
 const char startStringSensor11[] = {'s', 't', 'a', 'r', 't', '-', 's', '1', '1'};
 uint8_t *arr;
 
@@ -67,6 +66,7 @@ int main(void) {
     slNRF24_IoInit();
     setupInt0();
     slNRF24_Init();
+    slADC_init();
     sei();
     stage = 10;
 
@@ -82,10 +82,12 @@ int main(void) {
                 setBME280Mode();
                 break;
             case 14:
-
                 getDataFromBME280();
                 break;
             case 15:
+                measuerADC();
+                break;
+            case 16:
                 sendVianRF24L01();
                 break;
         }
@@ -114,7 +116,7 @@ void setupInt0() {
 
 //stage 10
 void goReset(){
-    slUART_WriteStringNl("Sensor11 Reset");
+    //slUART_WriteStringNl("Sensor11 Reset");
     slNRF24_Reset();
     slNRF24_FlushTx();
     slNRF24_FlushRx();
@@ -135,7 +137,7 @@ void compareStrings() {
         }
     }
     if (go == sizeof(data)) {
-        slUART_WriteStringNl("Sensor11 got start command");
+        //slUART_WriteStringNl("Sensor11 got start command");
         clearData();
         stage = 13;
     } else {
@@ -146,9 +148,9 @@ void compareStrings() {
 //stage13
 uint8_t setBME280Mode() {
     counter = 0;
-    slUART_WriteStringNl("Sensor11 reset BME280");
+    //slUART_WriteStringNl("Sensor11 reset BME280");
     if (BME280_SetMode(BME280_MODE_FORCED)) {
-        slUART_WriteString("Sensor11 Sensor set forced mode error!\r\n");
+        slUART_WriteString("BME280 set forced mode error!\r\n");
         return 1;
     }
     stage = 14;
@@ -161,7 +163,7 @@ uint8_t getDataFromBME280() {
     float temperature, humidity, pressure;
     if (BME280_ReadAll(&temperature, &pressure, &humidity)) {
 
-        slUART_WriteString("Sensor11 Sensor read error!\r\n");
+        slUART_WriteString("BME280 read error!\r\n");
         return 1;
     }
     BME180measure.temperature = calculateTemperature(temperature);
@@ -169,23 +171,33 @@ uint8_t getDataFromBME280() {
     BME180measure.pressure = calculatePressure(pressure);
     BME180measure.voltage = 323;
     BME180measure.sensorId = SENSOR_ID;
-    slUART_WriteStringNl("Sensor11 got data from BME280");
-    slUART_LogDecNl(BME180measure.temperature);
-    slUART_LogDecNl(BME180measure.humidity);
-    slUART_LogDecNl(BME180measure.pressure);
+    //slUART_WriteStringNl("Sensor11 got data from BME280");
+    // slUART_LogDecNl(BME180measure.temperature);
+    // slUART_LogDecNl(BME180measure.humidity);
+    // slUART_LogDecNl(BME180measure.pressure);
     stage = 15;
-    sendingTryCount = 0;
     return 0;
 }
 
-//stage15
+//stage 15
+void measuerADC(){
+    //slUART_WriteStringNl("Sensor11 measure ADC");
+    uint16_t wynik = 0;
+    for(uint8_t i = 0; i<12; i++){
+        wynik = wynik + slADC_measure(PC0);
+    }
+    BME180measure.voltage = wynik/12;
+    stage = 16;
+}
+
+//stage16
 uint8_t sendVianRF24L01() {
     counter = 0;
     slNRF24_FlushTx();
     slNRF24_FlushRx();
     slNRF24_Reset();
     fillBuferFromMEASURE(BME180measure, data);
-    slUART_WriteStringNl("Sensor11 Sending data");
+    //slUART_WriteStringNl("Sensor11 Sending data");
     slNRF24_TxPowerUp();
     slNRF24_TransmitPayload(&data, 9);
     clearData();

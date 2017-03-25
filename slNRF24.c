@@ -23,14 +23,13 @@ void slNRF24_IoInit(void) {
 }
 
 
-uint8_t slNRF24_SetRegister(uint8_t reg, void *dataIn, uint8_t len){
-    uint8_t ret;
+void slNRF24_SetRegister(uint8_t reg, void *dataIn, uint8_t len){
     uint8_t *data = dataIn;
     cli();
     _delay_us(10);
     CSN_LOW();
     _delay_us(10);
-    ret = slSPI_TransferInt(W_REGISTER + reg);
+    slSPI_TransferInt(W_REGISTER + reg);
     _delay_us(10);
     for(uint8_t i=0; i<len; i++){
         slSPI_TransferInt(data[i]); 
@@ -38,7 +37,6 @@ uint8_t slNRF24_SetRegister(uint8_t reg, void *dataIn, uint8_t len){
     }
     CSN_HIGH();
     sei();
-    return ret;
 }
 void slNRF24_GetRegister(uint8_t reg, uint8_t *dataIn, uint8_t len){
     cli();
@@ -79,37 +77,18 @@ void slNRF24_Init(void)
     val[0]=0x03;
     slNRF24_SetRegister(SETUP_AW, val, 1);
 
-    //RF channel setup - 2,400-2,527GHz 1MHz/steg
+    //RF channel setup - 2,400-2,527GHz 1MHz/chanel
     val[0]=0x1;//2,401Ghz
     slNRF24_SetRegister(RF_CH, val, 1);
 
-    //RF setup	- 250kbps spped and -18dBm
-    val[0]=0x20;
+    //RF setup	- 2Mbps spped and 0dBm
+    val[0]=0x0e;
     slNRF24_SetRegister(RF_SETUP, val, 1);
 
-    //RX RF_Adress setup 5 byte - 
-    for(uint8_t i=0; i<5; i++){
-        val[i]=0x12;
-    }
-    slNRF24_SetRegister(RX_ADDR_P0, val, 5); 
+    slNRF24_ChangeAddress(0x12);
 
-    //TX RF_Adress setup 5 byte -  väljer RF_Adressen på Transmittern (kan kommenteras bort på en "ren" Reciver)
-    //int i; //återanvänder föregående i...
-    for(uint8_t i=0; i<5; i++){
-        val[i]=0x12;
-    }
-    slNRF24_SetRegister(TX_ADDR, val, 5);
-
-    val[0]=dataLen;
+    val[0]=9;
     slNRF24_SetRegister(RX_PW_P0, val, 1);
-
-
-    for(uint8_t i=0; i<5; i++){
-        val[i]=0x12;
-    }
-    slNRF24_SetRegister(RX_ADDR_P1, val, 5); 
-
-    val[0]=dataLen;
     slNRF24_SetRegister(RX_PW_P1, val, 1);
 
     //CONFIG reg setup - Mask interrupt caused by MAX_RT disabled enable CRC CRC 2 byte scheme power up
@@ -130,13 +109,7 @@ void slNRF24_ChangeAddress(uint8_t adress)
         val[i]=adress;
     }
     slNRF24_SetRegister(RX_ADDR_P0, val, 5); 
-    for(uint8_t i=0; i<5; i++){
-        val[i]=adress;
-    }
     slNRF24_SetRegister(TX_ADDR, val, 5);
-    for(uint8_t i=0; i<5; i++){
-        val[i]=adress;
-    }
     slNRF24_SetRegister(RX_ADDR_P1, val, 5); 
     _delay_ms(100);
 }
@@ -152,15 +125,6 @@ void slNRF24_Reset(void)
     slSPI_TransferInt(0x70);
     _delay_us(10);
     CSN_HIGH();
-}
-
-void slNRF24_ReceivePayload(void)
-{
-
-    CE_HIGH();	//CE IR_High = "Lyssnar"
-    _delay_ms(1000);	//lyssnar i 1s och om mottaget går int0-interruptvektor igång
-    CE_LOW(); //ce låg igen -sluta lyssna
-
 }
 
 //Sänd data
