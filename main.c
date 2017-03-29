@@ -182,11 +182,12 @@ uint8_t getDataFromBME280() {
 //stage 15
 void measuerADC(){
     //slUART_WriteStringNl("Sensor11 measure ADC");
-    uint16_t wynik = 0;
+    float wynik = 0;
     for(uint8_t i = 0; i<12; i++){
-        wynik = wynik + slADC_measure(PC0);
+        wynik = wynik + slADC_measure(PC1);
     }
-    BME180measure.voltage = wynik/12;
+    wynik = (((110*((wynik/12)*100))/102300)*350)/110;
+    BME180measure.voltage = (uint16_t)wynik;
     stage = 16;
 }
 
@@ -209,6 +210,7 @@ uint8_t sendVianRF24L01() {
 ISR(INT0_vect) {
     status = 0;
     slNRF24_GetRegister(STATUS, &status, 1);
+    //slUART_LogBinaryNl(status);
     cli();
     if ((status & (1 << 6)) != 0) {
         stage = 12;//CompareStrings

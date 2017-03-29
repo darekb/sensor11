@@ -31,7 +31,7 @@
 #ifndef F_CPU
 #define F_CPU 16000000UL
 #endif
-
+//#define UART_BAUD 9600
 #define UART_BAUD 38400
 //#define UART_BAUD 115200
 #define __UBRR ((F_CPU + UART_BAUD * 8UL) / (16UL * UART_BAUD )-1)
