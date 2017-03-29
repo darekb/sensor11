@@ -186,8 +186,8 @@ void measuerADC(){
     for(uint8_t i = 0; i<12; i++){
         wynik = wynik + slADC_measure(PC1);
     }
-    wynik = (((110*((wynik/12)*100))/102300)*350)/110;
-    BME180measure.voltage = (uint16_t)wynik;
+    wynik = (((1105*((wynik/12)*1000))/1023000)*3500)/986;
+    BME180measure.voltage = (uint16_t)wynik/10;
     stage = 16;
 }
 

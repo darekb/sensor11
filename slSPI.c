@@ -26,7 +26,7 @@ void slSPI_Init() {
     slSPI_SetMode0();
 
     //Run the data in at 16MHz/4 - 4MHz
-    slSPI_SetClockDiv4();
+    slSPI_SetClockDiv2();
 
 }
 
