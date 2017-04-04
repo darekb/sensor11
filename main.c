@@ -48,7 +48,7 @@ uint8_t status;
 struct MEASURE BME180measure = {0, 0, 0, 0, 0};
 volatile uint8_t stage;
 volatile uint16_t counter = 0;
-const char startStringSensor11[] = {'s', 't', 'a', 'r', 't', '-', 's', '1', '1'};
+const char startStringSensor11[] = {'s', 't', 'a', 'r', 't', '-', 's', '2', '1'};
 uint8_t *arr;
 
 int main(void) {
