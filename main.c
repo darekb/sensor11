@@ -116,7 +116,7 @@ void setupInt0() {
 
 //stage 10
 void goReset(){
-    //slUART_WriteStringNl("Sensor11 Reset");
+    slUART_WriteStringNl("Sensor11 Reset");
     slNRF24_Reset();
     slNRF24_FlushTx();
     slNRF24_FlushRx();
@@ -202,6 +202,7 @@ uint8_t sendVianRF24L01() {
     slNRF24_TxPowerUp();
     slNRF24_TransmitPayload(&data, 9);
     clearData();
+    //_delay_ms(1000);
     stage = 10;
     return 0;
 }
