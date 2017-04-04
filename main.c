@@ -25,7 +25,7 @@
 #include "slSPI.h"
 #include "slAdc.h"
 
-#define SENSOR_ID 11
+#define SENSOR_ID 21
 
 void clearData();
 
