@@ -141,6 +141,7 @@ void compareStrings() {
         clearData();
         stage = 13;
     } else {
+        goReset();
         stage = 0;//wait for interupt from got data
     }
 }
