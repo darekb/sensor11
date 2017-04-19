@@ -7,7 +7,7 @@
 
 
 #ifndef F_CPU
-#define F_CPU 16000000UL
+#define F_CPU 8000000UL
 #endif
 
 #define showDebugDataMain 1
@@ -29,7 +29,9 @@
 
 void clearData();
 
-void setupInt0();
+void setupTimer();
+
+void setupInt1();
 
 void goReset();
 
@@ -64,7 +66,8 @@ int main(void) {
     }
     slSPI_Init();
     slNRF24_IoInit();
-    setupInt0();
+    //setupTimer();
+    setupInt1();
     slNRF24_Init();
     slADC_init();
     sei();
@@ -102,20 +105,25 @@ void clearData() {
     };
 }
 
+void setupTimer() {
+    TCCR0B |= (1 << CS02) | (1 << CS00);//prescaler 1024
+    TIMSK0 |= (1 << TOIE0);//przerwanie przy przepłnieniu timera0
+}
 
-void setupInt0() {
-    DDRD &= ~(1 << DDD2);     // Clear the PD2 pin
+void setupInt1() {
+    DDRD &= ~(1 << DDD3);     // Clear the PD2 pin
     // PD2 (PCINT0 pin) is now an input
-    PORTD |= (1 << PORTD2);    // turn On the Pull-up
+    PORTD |= (1 << PORTD3);    // turn On the Pull-up
     // PD2 is now an input with pull-up enabled
-    EICRA |= (1 << ISC01);// INT0 falling edge PD2
-    EICRA &= ~(1 << ISC00);// INT0 falling edge PD2
-    EIMSK |= (1 << INT0);     // Turns on INT0
+    EICRA |= (1 << ISC11);// INT0 falling edge PD2
+    EICRA &= ~(1 << ISC10);// INT0 falling edge PD2
+    EIMSK |= (1 << INT1);     // Turns on INT0
     sei();
 }
 
 //stage 10
 void goReset(){
+    counter = 0;
     slUART_WriteStringNl("Sensor21 Reset");
     slNRF24_Reset();
     slNRF24_FlushTx();
@@ -128,6 +136,7 @@ void goReset(){
 
 //stage 12
 void compareStrings() {
+    counter = 0;
     slNRF24_GetRegister(R_RX_PAYLOAD,data,9);
     uint8_t go = 0;
     uint8_t i = sizeof(data);
@@ -142,7 +151,7 @@ void compareStrings() {
         stage = 13;
     } else {
         goReset();
-        stage = 0;//wait for interupt from got data
+        stage = 10;//wait for interupt from got data
     }
 }
 
@@ -152,6 +161,8 @@ uint8_t setBME280Mode() {
     //slUART_WriteStringNl("Sensor21 reset BME280");
     if (BME280_SetMode(BME280_MODE_FORCED)) {
         slUART_WriteString("BME280 set forced mode error!\r\n");
+        //goReset();
+        stage = 10;
         return 1;
     }
     stage = 14;
@@ -163,8 +174,9 @@ uint8_t getDataFromBME280() {
     counter = 0;
     float temperature, humidity, pressure;
     if (BME280_ReadAll(&temperature, &pressure, &humidity)) {
-
         slUART_WriteString("BME280 read error!\r\n");
+        //goReset();
+        stage = 10;
         return 1;
     }
     BME180measure.temperature = calculateTemperature(temperature);
@@ -182,6 +194,7 @@ uint8_t getDataFromBME280() {
 
 //stage 15
 void measuerADC(){
+    counter = 0;
     //slUART_WriteStringNl("Sensor21 measure ADC");
     float wynik = 0;
     for(uint8_t i = 0; i<12; i++){
@@ -207,8 +220,18 @@ uint8_t sendVianRF24L01() {
     return 0;
 }
 
+//ISR(TIMER0_OVF_vect) {
+//    //co 0.01632sek.
+//    if (stage == 0) {
+//        counter = counter + 1;
+//    }
+//    if (counter == 920) {//30 sek Next mesurementsn
+//        counter = 0;
+//        stage = 10;
+//    }
+//}
 
-ISR(INT0_vect) {
+ISR(INT1_vect) {
     status = 0;
     slNRF24_GetRegister(STATUS, &status, 1);
     //slUART_LogBinaryNl(status);

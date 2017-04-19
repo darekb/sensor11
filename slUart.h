@@ -29,7 +29,7 @@
 #endif
 
 #ifndef F_CPU
-#define F_CPU 16000000UL
+#define F_CPU 8000000UL
 #endif
 //#define UART_BAUD 9600
 #define UART_BAUD 38400

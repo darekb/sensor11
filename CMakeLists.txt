@@ -11,7 +11,7 @@ set(AVR_H_FUSE 0xD9)
 # set(AVR_H_FUSE 0xDD)
 #
 set(AVR_UPLOADTOOL avrdude)
-#SET(F_CPU "16000000UL")
+#SET(F_CPU "8000000UL")
 #set(AVR_PROGRAMMER arduino)
 #set(AVR_UPLOADTOOL_PORT /dev/ttyUSB0)
 ##duomleanove

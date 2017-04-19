@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 #define _BME280_H_
 
 #ifndef F_CPU
-#define F_CPU 16000000UL
+#define F_CPU 8000000UL
 #endif
 
 #define showDebugDataBME280 0
