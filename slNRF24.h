@@ -22,6 +22,8 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+#define SENSOR_ADDR   0x11
+
 #define CE_PIN        PB1
 #define CE_OUTPUT()   DDRB |= (1 << CE_PIN)
 #define CE_HIGH()     PORTB |= (1 << CE_PIN)//enable RX
