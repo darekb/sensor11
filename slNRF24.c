@@ -85,7 +85,7 @@ void slNRF24_Init(void)
     val[0]=0x0e;
     slNRF24_SetRegister(RF_SETUP, val, 1);
 
-    slNRF24_ChangeAddress(0x12);
+    slNRF24_ChangeAddress(SENSOR_ADDR);
 
     val[0]=9;
     slNRF24_SetRegister(RX_PW_P0, val, 1);
@@ -162,7 +162,7 @@ void slNRF24_TxPowerUp(){
     configReg &= ~(1<<PRIM_RX);
     slNRF24_SetRegister(CONFIG,&configReg,1);
     CE_LOW();
-    slNRF24_ChangeAddress(0x12);
+    slNRF24_ChangeAddress(SENSOR_ADDR);
 }
 void slNRF24_RxPowerUp(){
     uint8_t configReg;
@@ -170,7 +170,7 @@ void slNRF24_RxPowerUp(){
     configReg |= (1<<PWR_UP) | (1<<PRIM_RX);
     slNRF24_SetRegister(CONFIG,&configReg,1);
     CE_HIGH();
-    slNRF24_ChangeAddress(0x12);
+    slNRF24_ChangeAddress(SENSOR_ADDR);
     slNRF24_FlushTx();
 }
 void slNRF24_PowerDown(){

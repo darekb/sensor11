@@ -33,6 +33,8 @@ void setupTimer();
 
 void setupInt1();
 
+void goSleep();
+
 void goReset();
 
 void compareStrings();
@@ -66,7 +68,7 @@ int main(void) {
     }
     slSPI_Init();
     slNRF24_IoInit();
-    //setupTimer();
+    setupTimer();
     setupInt1();
     slNRF24_Init();
     slADC_init();
@@ -75,6 +77,9 @@ int main(void) {
 
     while (1) {
         switch (stage) {
+            case 9:
+                goSleep();
+                break;
             case 10:
                 goReset();
             break;
@@ -121,6 +126,12 @@ void setupInt1() {
     sei();
 }
 
+//stage 9
+void goSleep(){
+    slUART_WriteStringNl("Sensor21 sleep");
+    slNRF24_PowerDown();
+    stage = 0;
+}
 //stage 10
 void goReset(){
     counter = 0;
@@ -150,7 +161,7 @@ void compareStrings() {
         clearData();
         stage = 13;
     } else {
-        goReset();
+        //goReset();
         stage = 10;//wait for interupt from got data
     }
 }
@@ -216,20 +227,18 @@ uint8_t sendVianRF24L01() {
     slNRF24_TxPowerUp();
     slNRF24_TransmitPayload(&data, 9);
     clearData();
-    stage = 10;
+    stage = 9;
     return 0;
 }
 
-//ISR(TIMER0_OVF_vect) {
-//    //co 0.01632sek.
-//    if (stage == 0) {
-//        counter = counter + 1;
-//    }
-//    if (counter == 920) {//30 sek Next mesurementsn
-//        counter = 0;
-//        stage = 10;
-//    }
-//}
+ISR(TIMER0_OVF_vect) {
+    //co 0.032768sek.
+    counter = counter + 1;
+    if (counter == 733) {//24.018943999999998 sek Next mesurements
+        counter = 0;
+        stage = 10;
+    }
+}
 
 ISR(INT1_vect) {
     status = 0;
