@@ -62,7 +62,7 @@ void slNRF24_Init(void)
     uint8_t val[5];
 
     //SETUP_RETR (the setup for "EN_AA")
-    val[0]=0x2F;	//0b0010 00011 "2" sets it up to 750uS delay between every retry (at least 500us at 250kbps and if payload >5bytes in 1Mbps, and if payload >15byte in 2Mbps) "F" is number of retries (1-15, now 15)
+    val[0]=0x3F;	//0b0010 00011 "2" sets it up to 750uS delay between every retry (at least 500us at 250kbps and if payload >5bytes in 1Mbps, and if payload >15byte in 2Mbps) "F" is number of retries (1-15, now 15)
     slNRF24_SetRegister(SETUP_RETR, val, 1);
 
     //Enable ‘Auto Acknowledgment’ Function on data pipe 0 and pipe 1
@@ -122,7 +122,7 @@ void slNRF24_Reset(void)
     slSPI_TransferInt(W_REGISTER + STATUS);
     _delay_us(10);
     //reset Data Ready RX FIFO interrupt, Data Sent TX FIFO interrupt, Maximum number of TX retransmits interrupt 
-    slSPI_TransferInt(0x70);
+    slSPI_TransferInt(0x3F);
     _delay_us(10);
     CSN_HIGH();
 }
