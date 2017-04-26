@@ -29,11 +29,7 @@
 
 void clearData();
 
-void setupTimer();
-
 void setupInt1();
-
-void goSleep();
 
 void goReset();
 
@@ -68,7 +64,6 @@ int main(void) {
     }
     slSPI_Init();
     slNRF24_IoInit();
-    setupTimer();
     setupInt1();
     slNRF24_Init();
     slADC_init();
@@ -77,9 +72,6 @@ int main(void) {
 
     while (1) {
         switch (stage) {
-            case 9:
-                goSleep();
-                break;
             case 10:
                 goReset();
             break;
@@ -110,10 +102,6 @@ void clearData() {
     };
 }
 
-void setupTimer() {
-    TCCR0B |= (1 << CS02) | (1 << CS00);//prescaler 1024
-    TIMSK0 |= (1 << TOIE0);//przerwanie przy przepłnieniu timera0
-}
 
 void setupInt1() {
     DDRD &= ~(1 << DDD3);     // Clear the PD2 pin
@@ -126,12 +114,6 @@ void setupInt1() {
     sei();
 }
 
-//stage 9
-void goSleep(){
-    slUART_WriteStringNl("Sensor21 sleep");
-    slNRF24_PowerDown();
-    stage = 0;
-}
 //stage 10
 void goReset(){
     counter = 0;
@@ -227,17 +209,8 @@ uint8_t sendVianRF24L01() {
     slNRF24_TxPowerUp();
     slNRF24_TransmitPayload(&data, 9);
     clearData();
-    stage = 9;
+    stage = 10;
     return 0;
-}
-
-ISR(TIMER0_OVF_vect) {
-    //co 0.032768sek.
-    counter = counter + 1;
-    if (counter == 733) {//24.018943999999998 sek Next mesurements
-        counter = 0;
-        stage = 10;
-    }
 }
 
 ISR(INT1_vect) {
