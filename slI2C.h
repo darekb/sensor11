@@ -23,22 +23,32 @@
 #define slI2C_ACK 1
 #define I2CBUSCLOCK 100000UL
 #if F_CPU < 3600000UL
-  #define __TWBR 10;//TWBR must be grather than 10
+#define __TWBR 10;//TWBR must be grather than 10
 #else
-  #define __TWBR ((F_CPU / I2CBUSCLOCK) - 16) / 2;
+#define __TWBR ((F_CPU / I2CBUSCLOCK) - 16) / 2;
 #endif
 
 uint8_t slI2C_readByteValue;
 uint8_t I2C_Error;
 uint8_t slI2C_statusFlags;
+
 uint8_t slI2C_returnReadValue();
+
 uint8_t slI2C_SetSLA(uint8_t slaIn);
+
 void slI2C_Init();
+
 uint8_t slI2C_Start();
+
 uint8_t slI2C_Stop();
+
 uint8_t slI2C_WriteByte(uint8_t byte);
+
 #if compileREadFunctions == 1
+
 uint8_t slI2C_ReadByte_NACK();
+
 uint8_t slI2C_ReadByte_ACK();
+
 #endif
 #endif /* SLI2C_H_ */

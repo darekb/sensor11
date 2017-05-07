@@ -8,7 +8,7 @@
 void slSPI_Init() {
     //Set MOSI and SCK output, all others input
     PORTB |= (1 >> DD_SS);//high
-    DDR_SPI  |= (1 << DD_SS);//output
+    DDR_SPI |= (1 << DD_SS);//output
     //set AVR as master
     slSPI_SetMaster();
 
@@ -37,7 +37,7 @@ uint8_t slSPI_TransferInt(uint8_t data) {
     SPDR = data;
     asm volatile("nop");
     /* Wait for transmission complete */
-    while (!(SPSR & _BV(SPIF))) ;
+    while (!(SPSR & _BV(SPIF)));
     return SPDR;
 }
 //

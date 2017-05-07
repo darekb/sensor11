@@ -53,16 +53,18 @@ void slUART_WriteString(const char myString[]) {
         i++;
     }
 }
+
 void slUART_WriteStringNl(const char myString[]) {
     slUART_WriteString(myString);
     slUART_WriteString("\r\n");
 }
+
 void slUART_WriteBuffer(const uint8_t myData[], uint8_t length) {
-		uint8_t buff[8];
-    memcpy(&buff, myData, 8*sizeof(uint8_t));
-    for (uint8_t i = 0; i < length;  i++) {
-    	slUART_LogHex((uint16_t)buff[i]);
-    	slUART_WriteByte(' ');
+    uint8_t buff[8];
+    memcpy(&buff, myData, 8 * sizeof(uint8_t));
+    for (uint8_t i = 0; i < length; i++) {
+        slUART_LogHex((uint16_t) buff[i]);
+        slUART_WriteByte(' ');
     }
     slUART_WriteString("\r\n");
 }
@@ -72,6 +74,7 @@ void slUART_LogBinary(uint16_t dataIn) {
     itoa(dataIn, buff, 2);
     slUART_WriteString(buff);
 }
+
 void slUART_LogBinaryNl(uint16_t dataIn) {
     slUART_LogBinary(dataIn);
     slUART_WriteString("\r\n");
@@ -82,11 +85,13 @@ void slUART_LogDec(uint16_t dataIn) {
     itoa(dataIn, buff, 10);
     slUART_WriteString(buff);
 }
+
 void slUART_LogDecWithSign(int16_t dataIn) {
     char buff[30];
     itoa(dataIn, buff, 10);
     slUART_WriteString(buff);
 }
+
 void slUART_LogDecNl(uint16_t dataIn) {
     slUART_LogDec(dataIn);
     slUART_WriteString("\r\n");
@@ -97,6 +102,7 @@ void slUART_LogHex(uint16_t dataIn) {
     itoa(dataIn, buff, 16);
     slUART_WriteString(buff);
 }
+
 void slUART_LogHexNl(uint16_t dataIn) {
     slUART_LogHex(dataIn);
     slUART_WriteString("\r\n");
